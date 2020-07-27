@@ -10,6 +10,9 @@ dask==2.1.0
 decorator==4.4.0
 Flask==1.1.1
 Flask-Compress==1.4.0
+geopandas==0.3.0
+pyshp==1.2.10
+shapely==1.6.3
 gunicorn==19.9.0
 html5lib==1.0.1
 idna==2.8
