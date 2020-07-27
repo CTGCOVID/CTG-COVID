@@ -6,7 +6,7 @@ with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-c
 import os
 from datetime import date
 from datetime import timedelta
-import plotly.express as px
+import plotly as px
 
 
 FIPS_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/FIPS.csv')
@@ -22,6 +22,9 @@ for x in range(0,len(FIPS_pd)):
     strFIPS.append(str(FIPS_pd['FIPS'][x]).rjust(5,'0'))
 FIPS_pd['FIPS'] = strFIPS
 
+
+mean = FIPS_pd['Incidence_Rate'].mean()
+std = FIPS_pd['Incidence_Rate'].std()
 
 colorscale = ["#CCFFCC","#00FF00","#99FF00","#CCFF00","#FFFF00","#FFCC00","#FF6600","#FF0000"]
 
