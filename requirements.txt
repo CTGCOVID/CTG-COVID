@@ -13,6 +13,8 @@ Flask-Compress==1.4.0
 gunicorn==19.9.0
 html5lib==1.0.1
 idna==2.8
+geopandas
+choropleth.geojson
 ipython-genutils==0.2.0
 itsdangerous==1.1.0
 Jinja2==2.10.1
