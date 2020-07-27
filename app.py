@@ -1,5 +1,8 @@
+from urllib.request import urlopen
 import pandas as pd
 import json
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
 import os
 from datetime import date
 from datetime import timedelta
@@ -26,9 +29,6 @@ Total_pd = FIPS_pd
 #Import COVID Data
 ########################################################################################################################################
 i=62
-
-os.chdir(r'C:\Users\borde\Desktop\COVID\Daily County Reports')
-
 while i>0:
     badDate = date(2020,5,28)
     day1 = date.today() - timedelta(days=i)
@@ -36,7 +36,8 @@ while i>0:
     day2 = day1 - timedelta(days=14)
     d2 = day2.strftime("%m-%d-%Y")
     
-    COVID1_pd = pd.read_csv(str(d1) + '.csv')
+    url1 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' + str(d1) + '.csv'
+    COVID1_pd = pd.read_csv(url1, error_bad_lines=False)
     if day1 <= badDate:
         COVID1_pd = COVID1_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key'],axis=1).dropna(subset=['FIPS'])    
     else:
@@ -45,7 +46,8 @@ while i>0:
     COVID1_pd = COVID1_pd[COVID1_pd['FIPS']<60000].reset_index(drop = True)
     COVID1_pd = COVID1_pd.rename(columns={'Active' : 'Total'})
 
-    COVID2_pd = pd.read_csv(str(d2) + '.csv')
+    url2 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' + str(d2) + '.csv'
+    COVID2_pd = pd.read_csv(url2, error_bad_lines=False)
     if day2 <= badDate:
         COVID2_pd = COVID2_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key'],axis=1).dropna(subset=['FIPS'])
     else:
