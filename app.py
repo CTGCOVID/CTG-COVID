@@ -367,8 +367,7 @@ def graph_risk(state_slctd, county_slctd):
     fig6.update_yaxes(showline=True, linecolor='white', title_text='New Cases')
     fig6.update_layout(annotations=[dict(x=point['Incidence_Rate'][0], y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, )], height=500,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
     
-    return fig6
-})  
+    return fig6 
 
 if __name__ == '__main__':
     app.run_server(debug=False)
