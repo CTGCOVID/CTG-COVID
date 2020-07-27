@@ -6,7 +6,7 @@ with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-c
 import os
 from datetime import date
 from datetime import timedelta
-import plotly as px
+import plotly.express as px
 
 
 FIPS_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/FIPS.csv')
