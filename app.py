@@ -88,7 +88,9 @@ app.layout = html.Div([
         ],className='four columns', style={'width':'50%'}),
         html.Br(),
         html.Div([
-            html.Div(children=html.Div(id='graphs'),className='row'),
+            dcc.Graph(id='activegraph'),
+            dcc.Graph(id='IRgraph'),
+            dcc.Graph(id='newgraph'),
         ],className='eight columns', style={'width':'50%'}),
     ],className='row', style={'display':'flex'}),
     
@@ -99,19 +101,12 @@ app.layout = html.Div([
 
 
 @app.callback(
-    Output(component_id='graphs', component_property='children'),
+    Output(component_id='activegraph', component_property='figure'),
     [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
 )
 def graph_active(state_slctd, county_slctd):
-    graphs=[]
-    class_choice = 'col s12, m12 l6'
-    
     local = CombinedFIPS_pd.copy()
     local = local[local["Admin2"]=='Okaloosa'].reset_index(drop=True)
-    total = CombinedTotal_pd.copy()
-    total = total[total['Province_State']== state_slctd]
-    total = total[total['Admin2']==county_slctd]
-    total = total.reset_index(drop=True)
     dff = CombinedFIPS_pd.copy()
     dff = dff[dff["Province_State"] == state_slctd]
     dff = dff[dff["Admin2"] == county_slctd]
@@ -127,14 +122,8 @@ def graph_active(state_slctd, county_slctd):
     while i > 0:
         day = date.today() - timedelta(days=i)
         di = day.strftime("%m-%d-%Y")
-        day2 = date.today() - timedelta(days=(i+1))
-        di2 = day2.strftime("%m-%d-%Y")
         x.append(di)
         y.append(dff[di][0])
-        z.append(dff[di][0]/dff['Population'][0]*100000)
-        z2.append(local[di][0]/local['Population'][0]*100000)
-        difference = abs(total[di][0]-total[di2][0])
-        z3.append(difference)
         i-=1
     
     fig3 = px.bar(x=x, y=y, title='Active Cases')
@@ -143,9 +132,33 @@ def graph_active(state_slctd, county_slctd):
     fig3.update_yaxes(showline=True, linecolor='white', title_text='Active Cases')
     fig3.update_layout(height=300,yaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
     
-    graphs.append(html.Div(dcc.Graph(
-        id='Active_Graph', 
-        figure=fig3)))
+    return fig3
+
+
+@app.callback(
+    Output(component_id='IRgraph', component_property='figure'),
+    [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
+)
+def graph_active(state_slctd, county_slctd):
+    local = CombinedFIPS_pd.copy()
+    local = local[local["Admin2"]=='Okaloosa'].reset_index(drop=True)
+    dff = CombinedFIPS_pd.copy()
+    dff = dff[dff["Province_State"] == state_slctd]
+    dff = dff[dff["Admin2"] == county_slctd]
+    dff = dff.reset_index(drop=True)
+
+    x=[]
+    z=[]
+    z2 = []
+    i=61
+
+    while i > 0:
+        day = date.today() - timedelta(days=i)
+        di = day.strftime("%m-%d-%Y")
+        x.append(di)
+        z.append(dff[di][0]/dff['Population'][0]*100000)
+        z2.append(local[di][0]/local['Population'][0]*100000)
+        i-=1
     
     LineData = pd.DataFrame(list(zip(x,z,z2)), columns = ['Dates', county_slctd, 'Local']) 
     
@@ -154,9 +167,32 @@ def graph_active(state_slctd, county_slctd):
     fig4.update_yaxes(showline=True, linecolor='white', title_text='Active Cases')
     fig4.update_layout(height=300,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
     
-    graphs.append(html.Div(dcc.Graph(
-        id='IR_Graph', 
-        figure=fig4)))
+    return fig4
+
+
+@app.callback(
+    Output(component_id='newgraph', component_property='figure'),
+    [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
+)
+def graph_active(state_slctd, county_slctd):
+    total = CombinedTotal_pd.copy()
+    total = total[total['Province_State']== state_slctd]
+    total = total[total['Admin2']==county_slctd]
+    total = total.reset_index(drop=True)
+
+    x=[]
+    z3=[]
+    i=61
+
+    while i > 0:
+        day = date.today() - timedelta(days=i)
+        di = day.strftime("%m-%d-%Y")
+        day2 = date.today() - timedelta(days=(i+1))
+        di2 = day2.strftime("%m-%d-%Y")
+        x.append(di)
+        difference = abs(total[di][0]-total[di2][0])
+        z3.append(difference)
+        i-=1
     
     fig5 = px.bar(x=x, y=z3, title='New Cases')
     fig5.update_traces(marker_color='#00ff00')
@@ -164,12 +200,7 @@ def graph_active(state_slctd, county_slctd):
     fig5.update_yaxes(showline=True, linecolor='white', title_text='New Cases')
     fig5.update_layout(height=300,yaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
     
-    graphs.append(html.Div(dcc.Graph(
-        id='New_Graph', 
-        figure=fig5)))
-    
-    return graphs
-
+    return fig5
 
 
 @app.callback(
