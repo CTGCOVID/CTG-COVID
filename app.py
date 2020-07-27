@@ -120,7 +120,7 @@ def graph_active(state_slctd, county_slctd):
     i=61
 
     while i > 0:
-        day = date.(2020,7,26) - timedelta(days=i)
+        day = date(2020,7,26) - timedelta(days=i)
         di = day.strftime("%m-%d-%Y")
         x.append(di)
         y.append(dff[di][0])
@@ -153,7 +153,7 @@ def graph_active(state_slctd, county_slctd):
     i=61
 
     while i > 0:
-        day = date.(2020,7,26) - timedelta(days=i)
+        day = date(2020,7,26) - timedelta(days=i)
         di = day.strftime("%m-%d-%Y")
         x.append(di)
         z.append(dff[di][0]/dff['Population'][0]*100000)
@@ -185,9 +185,9 @@ def graph_active(state_slctd, county_slctd):
     i=61
 
     while i > 0:
-        day = date.(2020,7,26) - timedelta(days=i)
+        day = date(2020,7,26) - timedelta(days=i)
         di = day.strftime("%m-%d-%Y")
-        day2 = date.(2020,7,26) - timedelta(days=(i+1))
+        day2 = date(2020,7,26) - timedelta(days=(i+1))
         di2 = day2.strftime("%m-%d-%Y")
         x.append(di)
         difference = abs(total[di][0]-total[di2][0])
