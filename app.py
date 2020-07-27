@@ -8,109 +8,20 @@ from datetime import date
 from datetime import timedelta
 
 
-
-########################################################################################################################################
-#Import all FIPS Information
-########################################################################################################################################
-FIPSurl = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv'
-FIPS_pd = pd.read_csv(FIPSurl, error_bad_lines=False)
-FIPS_pd = FIPS_pd.drop(['UID', 'iso2', 'iso3', 'code3', 'Country_Region','Lat', 'Long_'],axis=1).dropna(subset=['FIPS'])
-FIPS_pd = FIPS_pd[FIPS_pd['FIPS']>1000]
-FIPS_pd = FIPS_pd[FIPS_pd['FIPS']<60000].reset_index(drop = True)
-FIPS_pd['Combined_Key'] = [x[:-4] for x in FIPS_pd['Combined_Key']] 
-Total_pd = FIPS_pd
-#display(FIPS_pd)
-########################################################################################################################################
-
-
-
-
-########################################################################################################################################
-#Import COVID Data
-########################################################################################################################################
-i=62
-while i>0:
-    badDate = date(2020,5,28)
-    day1 = date.today() - timedelta(days=i)
-    d1 = day1.strftime("%m-%d-%Y")
-    day2 = day1 - timedelta(days=14)
-    d2 = day2.strftime("%m-%d-%Y")
-    
-    url1 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' + str(d1) + '.csv'
-    COVID1_pd = pd.read_csv(url1, error_bad_lines=False)
-    if day1 <= badDate:
-        COVID1_pd = COVID1_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key'],axis=1).dropna(subset=['FIPS'])    
-    else:
-        COVID1_pd = COVID1_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key', 'Incidence_Rate', 'Case-Fatality_Ratio'],axis=1).dropna(subset=['FIPS'])
-    COVID1_pd = COVID1_pd[COVID1_pd['FIPS']>1000]
-    COVID1_pd = COVID1_pd[COVID1_pd['FIPS']<60000].reset_index(drop = True)
-    COVID1_pd = COVID1_pd.rename(columns={'Active' : 'Total'})
-
-    url2 = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' + str(d2) + '.csv'
-    COVID2_pd = pd.read_csv(url2, error_bad_lines=False)
-    if day2 <= badDate:
-        COVID2_pd = COVID2_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key'],axis=1).dropna(subset=['FIPS'])
-    else:
-        COVID2_pd = COVID2_pd.drop(['Admin2', 'Province_State', 'Country_Region', 'Last_Update', 'Confirmed','Lat', 'Long_', 'Deaths', 'Recovered', 'Combined_Key', 'Incidence_Rate', 'Case-Fatality_Ratio'],axis=1).dropna(subset=['FIPS'])
-    COVID2_pd = COVID2_pd[COVID2_pd['FIPS']>1000]
-    COVID2_pd = COVID2_pd[COVID2_pd['FIPS']<60000].reset_index(drop = True)
-    COVID2_pd = COVID2_pd.rename(columns={'Active' : 'Total14'})
-
-    combined_pd = COVID1_pd.merge(COVID2_pd, on='FIPS',how='left').fillna(0)
-    total_pd = combined_pd.drop(['Total14'], axis=1)
-    combined_pd['Active'] = (combined_pd['Total'] - combined_pd['Total14']).abs()
-    combined_pd = combined_pd.drop(['Total', 'Total14'],axis=1)
-    total_pd = total_pd.sort_values(['FIPS']).reset_index(drop=True)
-    total_pd = total_pd.rename(columns={'Total':str(d1)})
-    combined_pd = combined_pd.sort_values(['FIPS']).reset_index(drop=True)
-    combined_pd = combined_pd.rename(columns={'Active' : str(d1)})
-
-    Total_pd = Total_pd.merge(total_pd, on='FIPS',how='left').fillna(0)
-    FIPS_pd = FIPS_pd.merge(combined_pd, on='FIPS',how='left').fillna(0)
-    i -= 1
-
-strFIPS = []
+FIPS_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/FIPS.csv')
+States_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/States.csv')
+CombinedFIPS_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/CombinedFIPS.csv')
+CombinedTotal_pd = pd.read_csv('https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/CombinedTotal.csv')
 
 FIPS_pd['FIPS'] = FIPS_pd['FIPS'].astype('int64', copy=True)
-Total_pd['FIPS'] = Total_pd['FIPS'].astype('int64', copy=True)
-Total_pd = Total_pd.drop(['Population', 'Combined_Key'],axis=1)
+
+strFIPS=[]
 
 for x in range(0,len(FIPS_pd)):
     strFIPS.append(str(FIPS_pd['FIPS'][x]).rjust(5,'0'))
 FIPS_pd['FIPS'] = strFIPS
-Total_pd['FIPS'] = strFIPS
 
 
-FIPS_pd = FIPS_pd.fillna(0)    
-FIPS_pd['Incidence_Rate'] = FIPS_pd[str(d1)]/FIPS_pd['Population']*100000
-mean = FIPS_pd['Incidence_Rate'].mean()
-std = FIPS_pd['Incidence_Rate'].std()
-
-########################################################################################################################################
-
-
-
-
-
-########################################################################################################################################
-#Graph County Map
-########################################################################################################################################
-import plotly.express as px
-
-risk = []
-
-for x in range(0,len(FIPS_pd)):
-    if (FIPS_pd['Incidence_Rate'][x] < mean+std):
-        risk.append("LOW")
-    elif (FIPS_pd['Incidence_Rate'][x] >= mean+std) and (FIPS_pd['Incidence_Rate'][x] < mean+2*std):
-        risk.append("MEDIUM")
-    elif (FIPS_pd['Incidence_Rate'][x] >= mean+std*2):
-        risk.append("HIGH")
-    else:
-        risk.append("ERROR")
-
-FIPS_pd['Risk'] = risk
-        
 colorscale = ["#CCFFCC","#00FF00","#99FF00","#CCFF00","#FFFF00","#FFCC00","#FF6600","#FF0000"]
 
 fig = px.choropleth(FIPS_pd, geojson=counties, locations='FIPS', color= 'Incidence_Rate',
@@ -122,71 +33,6 @@ fig = px.choropleth(FIPS_pd, geojson=counties, locations='FIPS', color= 'Inciden
 fig.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<br>Active Cases: %{customdata[1]}<extra></extra>')
 fig.update_layout(height=700, legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#323130', lakecolor='#323130', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110')
 fig.update_geos(showsubunits=True, subunitcolor='black')
-########################################################################################################################################
-
-
-
-
-
-
-########################################################################################################################################
-#Add State daily data
-########################################################################################################################################
-States_pd = FIPS_pd.drop(['Admin2', 'FIPS', 'Combined_Key', 'Incidence_Rate', 'Risk'],axis=1)
-States_pd = States_pd.groupby(['Province_State'], as_index=False).sum()
-States_pd['Incidence_Rate'] = States_pd[str(d1)]/States_pd['Population']*100000
-States_pd['Admin2'] = 'All'
-States_pd['Combined_Key'] = States_pd['Admin2'] + ', ' + States_pd['Province_State']
-StateTotal_pd = Total_pd.drop(['Admin2', 'FIPS'],axis=1)
-StateTotal_pd = StateTotal_pd.groupby(['Province_State'], as_index=False).sum()
-StateTotal_pd['Admin2'] = 'All'
-
-risk = []
-    
-for x in range(0,len(States_pd)):
-    if (States_pd['Incidence_Rate'][x] < mean+std):
-        risk.append("LOW")
-    elif (States_pd['Incidence_Rate'][x] >= mean+std) and (States_pd['Incidence_Rate'][x] < mean+2*std):
-        risk.append("MEDIUM")
-    elif (States_pd['Incidence_Rate'][x] >= mean+std*2):
-        risk.append("HIGH")
-    else:
-        risk.append("ERROR")
-
-States_pd['Risk'] = risk
-States_pd['FIPS'] = 'NaN'
-
-CombinedFIPS_pd = pd.concat([FIPS_pd, States_pd], sort = False).reset_index(drop = True)
-CombinedTotal_pd = pd.concat([Total_pd, StateTotal_pd], sort=False).reset_index(drop=True)
-#######################################################################################################################################
-
-
-
-
-
-#######################################################################################################################################
-#Create DOD State Map
-#######################################################################################################################################
-States_pd['DOD_Rank'] = 'green'
-States_pd.loc[States_pd['Province_State'] == 'Florida','DOD_Rank'] = 'red'
-state_codes = {
-    'District of Columbia' : 'dc','Mississippi': 'MS', 'Oklahoma': 'OK', 
-    'Delaware': 'DE', 'Minnesota': 'MN', 'Illinois': 'IL', 'Arkansas': 'AR', 
-    'New Mexico': 'NM', 'Indiana': 'IN', 'Maryland': 'MD', 'Louisiana': 'LA', 
-    'Idaho': 'ID', 'Wyoming': 'WY', 'Tennessee': 'TN', 'Arizona': 'AZ', 
-    'Iowa': 'IA', 'Michigan': 'MI', 'Kansas': 'KS', 'Utah': 'UT', 
-    'Virginia': 'VA', 'Oregon': 'OR', 'Connecticut': 'CT', 'Montana': 'MT', 
-    'California': 'CA', 'Massachusetts': 'MA', 'West Virginia': 'WV', 
-    'South Carolina': 'SC', 'New Hampshire': 'NH', 'Wisconsin': 'WI',
-    'Vermont': 'VT', 'Georgia': 'GA', 'North Dakota': 'ND', 
-    'Pennsylvania': 'PA', 'Florida': 'FL', 'Alaska': 'AK', 'Kentucky': 'KY', 
-    'Hawaii': 'HI', 'Nebraska': 'NE', 'Missouri': 'MO', 'Ohio': 'OH', 
-    'Alabama': 'AL', 'Rhode Island': 'RI', 'South Dakota': 'SD', 
-    'Colorado': 'CO', 'New Jersey': 'NJ', 'Washington': 'WA', 
-    'North Carolina': 'NC', 'New York': 'NY', 'Texas': 'TX', 
-    'Nevada': 'NV', 'Maine': 'ME'}
-
-States_pd['State_Code'] = States_pd['Province_State'].apply(lambda x : state_codes[x])
 
 fig2 = px.choropleth(States_pd, locations='State_Code', color= 'DOD_Rank',
                     scope = "usa",hover_name = "Province_State", locationmode='USA-states', color_discrete_sequence = ['#4CBB17','red'], title='DOD State Rankings')
