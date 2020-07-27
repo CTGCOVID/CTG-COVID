@@ -61,6 +61,7 @@ counties = CombinedFIPS_pd['Admin2'].unique()
 counties.sort()
 
 app = dash.Dash(__name__)
+server=app.server
 
 ##APP LAYOUT
 app.layout = html.Div([
