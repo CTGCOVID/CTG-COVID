@@ -31,7 +31,7 @@ colorscale = ["#CCFFCC","#00FF00","#99FF00","#CCFF00","#FFFF00","#FFCC00","#FF66
 fig = px.choropleth(FIPS_pd, geojson=counties, locations='FIPS', color= 'Incidence_Rate',
                     color_continuous_scale=colorscale,
                     range_color=(0, mean+std*2), 
-                    scope="usa", title='Active Incidence Rate per County', hover_name = "Combined_Key", hover_data=['Risk', str(d1)])
+                    scope="usa", title='Active Incidence Rate per County', hover_name = "Combined_Key", hover_data=['Risk'])
 
 
 fig.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<br>Active Cases: %{customdata[1]}<extra></extra>')
