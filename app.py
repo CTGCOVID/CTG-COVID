@@ -54,7 +54,7 @@ LE = str(LE.strftime("%#m/%#d/%y"))
 LS = sunday - timedelta(days=14)
 LS = str(LS.strftime("%#m/%#d/%y"))
 
-thisEnd = confirmed_pd[TE]
+thisEnd = confirmed_pd[columns[-1]]
 
 risk = []
 graphIR = []
