@@ -58,7 +58,7 @@ risk = []
 graphIR = []
 
 for x in range(0,len(confirmed_pd)):
-    graphIR.append((confirmed_pd[TE][x]-confirmed_pd[TS][x])/confirmed_pd['Population'][x]*100000)
+    graphIR.append((confirmed_pd['7/26/20'][x]-confirmed_pd['7/19/20'][x])/confirmed_pd['Population'][x]*100000)
 
 mean = mean(graphIR)
 std = stdev(graphIR)
