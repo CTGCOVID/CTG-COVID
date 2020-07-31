@@ -46,7 +46,7 @@ while(day != 6):
     day = sunday.weekday()
 
 TE = sunday
-TE = str(TE.strftime("%#m/%#d/%y"))
+
 TS = sunday - timedelta(days=7)
 TS = str(TS.strftime("%#m/%#d/%y"))
 LE = sunday - timedelta(days=7)
