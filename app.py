@@ -23,6 +23,8 @@ deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/co
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
+confirmed_pd.columns = confirmed_pd.columns.astype(str)
+deaths_pd.columns = deaths_pd.columns.astype(str)
 
 columns = confirmed_pd.columns
 today = datetime.strptime(columns[-1],'%m/%d/%y').date()
