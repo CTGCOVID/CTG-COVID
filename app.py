@@ -27,7 +27,6 @@ confirmed_pd.columns = confirmed_pd.columns.astype(str)
 deaths_pd.columns = deaths_pd.columns.astype(str)
 
 columns = confirmed_pd.columns
-today = datetime.strptime(columns[-1],'%m/%d/%y').date()
 
 confirmed_pd['Population'] = population_pd['population']
 deaths_pd['Population'] = population_pd['population']
@@ -38,29 +37,25 @@ deaths_pd = deaths_pd[deaths_pd['Population']!=0].reset_index(drop=True)
 y_vals=[]
 ranges=[]
 
-sunday = today
+sunday = datetime.strptime(columns[-1],'%m/%d/%y').date()
 day = sunday.weekday()
+gap = 1
 
 while(day != 6):
+    gap += 1
     sunday = sunday - timedelta(days=1)
     day = sunday.weekday()
 
-TE = sunday
-
-TS = sunday - timedelta(days=7)
-TS = str(TS.strftime("%#m/%#d/%y"))
-LE = sunday - timedelta(days=7)
-LE = str(LE.strftime("%#m/%#d/%y"))
-LS = sunday - timedelta(days=14)
-LS = str(LS.strftime("%#m/%#d/%y"))
-
-thisEnd = confirmed_pd[columns[-1]]
+TE = columns[-gap]
+TS = columns[-(gap+7)]
+LE = TS
+LS = columns[-(gap+14)]
 
 risk = []
 graphIR = []
 
 for x in range(0,len(confirmed_pd)):
-    graphIR.append((thisEnd[x]-confirmed_pd[TS][x])/confirmed_pd['Population'][x]*100000)
+    graphIR.append((confirmed_pd[TE][x]-confirmed_pd[TS][x])/confirmed_pd['Population'][x]*100000)
     
 mean = mean(graphIR)
 std = stdev(graphIR)
@@ -164,12 +159,10 @@ def graph_active(state_slctd, county_slctd):
     x=[]
     y=[]
 
-    i=61
+    i=60
     while i>0:
-        day1 = today - timedelta(days=i)
-        d1 = day1.strftime("%#m/%#d/%y")
-        day2 = day1 - timedelta(days=14)
-        d2 = day2.strftime("%#m/%#d/%y")
+        d1 = columns[-i]
+        d2 = columns[-(i+14)]
 
         x.append(d1)
         y.append(dff[d1][0] - dff[d2][0] - dffdeaths[d1][0])
@@ -212,12 +205,10 @@ def graph_IR(state_slctd, county_slctd):
     y=[]
     z=[]
 
-    i=61
+    i=60
     while i>0:
-        day1 = today - timedelta(days=i)
-        d1 = day1.strftime("%#m/%#d/%y")
-        day2 = day1 - timedelta(days=14)
-        d2 = day2.strftime("%#m/%#d/%y")
+        d1 = columns[-i]
+        d2 = columns[-(i+14)]
 
         x.append(d1)
         localsum = local1[d1][0] + local2[d1][0] + local3[d1][0]
@@ -253,12 +244,10 @@ def graph_new(state_slctd, county_slctd):
     x=[]
     y=[]
     
-    i=61
+    i=60
     while i>0:
-        day1 = today - timedelta(days=i)
-        d1 = day1.strftime("%#m/%#d/%y")
-        day2 = day1 - timedelta(days=1)
-        d2 = day2.strftime("%#m/%#d/%y")
+        d1 = columns[-i]
+        d2 = columns[-(i+1)]
 
         x.append(d1)
         y.append(dff[d1][0] - dff[d2][0])
