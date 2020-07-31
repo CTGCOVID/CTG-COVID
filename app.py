@@ -125,8 +125,8 @@ app.layout = html.Div([
             html.Div(children='County: ',style={'font-color':'white'}),
             dcc.Dropdown(id = 'county_dropdown', options=[{'label' : c, 'value' : c} for c in counties], value='Okaloosa County', style={'height':'50px', 'width':'90%', 'font-size':'120%'}),
             html.Br(),
-            html.Br(),
             dcc.Graph(id='riskgraph'),
+            dcc.Graph(id='totalgraph'),
         ],className='four columns', style={'width':'50%'}),
         html.Br(),
         html.Div([
@@ -284,9 +284,46 @@ def graph_new(state_slctd, county_slctd):
     fig6.update_traces(marker_color='#00ff00')
     fig6.update_xaxes(showline=True, linecolor='white', title_text='Date')
     fig6.update_yaxes(showline=True, linecolor='white', title_text='New Cases')
-    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, )], height=500,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
+    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, )], height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
 
     return fig6
+
+@app.callback(
+    Output(component_id='totalgraph', component_property='figure'),
+    [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
+)
+def graph_total(state_slctd, county_slctd):
+    total = confirmed_pd.copy()
+    total = total[total["State"] == state_slctd]
+    total = total[total["County Name"] == county_slctd].reset_index(drop=True)
+    deaths = deaths_pd.copy()
+    deaths = deaths[deaths['State'] == state_slctd]
+    deaths = deaths[deaths['County Name'] == county_slctd].reset_index(drop=True)
+
+    x=[]
+    y=[]
+    z=[]
+    z2=[]
+
+    i=60
+    while i>0:
+        d1 = columns[-i]
+        d2 = columns[-(i+14)]
+
+        x.append(d1)
+        y.append(total[d1][0])
+        z.append(total[d1][0] - ((total[d1][0] - total[d2][0] - deaths[d1][0])/total['Population'][0]*100000) - deaths[d1][0])
+        z2.append(deaths[d1][0])
+        i -= 1
+
+    LineData = pd.DataFrame(list(zip(x,y,z,z2)), columns = ['Dates', "Total", 'Recovered', 'Deaths']) 
+
+    fig7 = px.line(LineData, x='Dates', y=['Total','Recovered','Deaths'], title='Total Cases', color_discrete_sequence = ['blue','green','red'])
+    fig7.update_xaxes(title_text='Date')
+    fig7.update_yaxes(showline=True, linecolor='white', title_text='Total Cases')
+    fig7.update_layout(height=330,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
+
+    return fig7
 
 if __name__ == '__main__':
     app.run_server(debug=False)
