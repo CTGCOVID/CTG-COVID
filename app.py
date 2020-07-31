@@ -46,13 +46,13 @@ while(day != 6):
     day = sunday.weekday()
 
 TE = sunday
-TE = TE.strftime("%#m/%#d/%y")
+TE = str(TE.strftime("%#m/%#d/%y"))
 TS = sunday - timedelta(days=7)
-TS = TS.strftime("%#m/%#d/%y")
+TS = str(TS.strftime("%#m/%#d/%y"))
 LE = sunday - timedelta(days=7)
-LE = LE.strftime("%#m/%#d/%y")
+LE = str(LE.strftime("%#m/%#d/%y"))
 LS = sunday - timedelta(days=14)
-LS = LS.strftime("%#m/%#d/%y")
+LS = str(LS.strftime("%#m/%#d/%y"))
 
 risk = []
 graphIR = []
