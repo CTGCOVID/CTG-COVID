@@ -151,10 +151,6 @@ def graph_active(state_slctd, county_slctd):
     dff = dff[dff["State"] == state_slctd]
     dff = dff[dff["County Name"] == county_slctd]
     dff = dff.reset_index(drop=True)
-    dffdeaths = deaths_pd.copy()
-    dffdeaths = dffdeaths[dffdeaths['State'] == state_slctd]
-    dffdeaths = dffdeaths[dffdeaths['County Name'] == county_slctd]
-    dffdeaths = dffdeaths.reset_index(drop=True)
 
     x=[]
     y=[]
@@ -165,7 +161,7 @@ def graph_active(state_slctd, county_slctd):
         d2 = columns[-(i+14)]
 
         x.append(d1)
-        y.append(dff[d1][0] - dff[d2][0] - dffdeaths[d1][0])
+        y.append(dff[d1][0] - dff[d2][0])
         i -= 1
 
     fig3 = px.bar(x=x, y=y, title='Active Cases')
@@ -190,14 +186,6 @@ def graph_IR(state_slctd, county_slctd):
     dff = confirmed_pd.copy()
     dff = dff[dff["State"] == state_slctd]
     dff = dff[dff["County Name"] == county_slctd].reset_index(drop=True)
-    localdeaths = deaths_pd.copy()
-    localdeaths = localdeaths[localdeaths['State']=='FL']
-    localdeaths1 = localdeaths[localdeaths['County Name']=='Okaloosa County'].reset_index(drop=True)
-    localdeaths2 = localdeaths[localdeaths['County Name']=='Walton County'].reset_index(drop=True)
-    localdeaths3 = localdeaths[localdeaths['County Name']=='Santa Rosa County'].reset_index(drop=True)
-    dffdeaths = deaths_pd.copy()
-    dffdeaths = dffdeaths[dffdeaths['State'] == state_slctd]
-    dffdeaths = dffdeaths[dffdeaths['County Name'] == county_slctd].reset_index(drop=True)
 
     localPop = local1['Population'][0] + local2['Population'][0] + local3['Population'][0]
 
@@ -213,9 +201,8 @@ def graph_IR(state_slctd, county_slctd):
         x.append(d1)
         localsum = local1[d1][0] + local2[d1][0] + local3[d1][0]
         local14sum = local1[d2][0] + local2[d2][0] + local3[d2][0]
-        localdeathsum = localdeaths1[d1][0] + localdeaths2[d1][0] + localdeaths3[d1][0]
-        y.append((localsum - local14sum - localdeathsum)/localPop*100000)
-        z.append((dff[d1][0] - dff[d2][0] - dffdeaths[d1][0])/dff['Population'][0]*100000)
+        y.append((localsum - local14sum)/localPop*100000)
+        z.append((dff[d1][0] - dff[d2][0])/dff['Population'][0]*100000)
         i -= 1
 
     LineData = pd.DataFrame(list(zip(x,z,y)), columns = ['Dates', county_slctd, 'Local']) 
@@ -237,9 +224,6 @@ def graph_new(state_slctd, county_slctd):
     dff = dff[dff["State"] == state_slctd]
     dff = dff[dff["County Name"] == county_slctd]
     dff = dff.reset_index(drop=True)
-    dffdeaths = deaths_pd.copy()
-    dffdeaths = dffdeaths[dffdeaths['State'] == state_slctd]
-    dffdeaths = dffdeaths[dffdeaths['County Name'] == county_slctd].reset_index(drop=True)
 
     x=[]
     y=[]
@@ -312,7 +296,7 @@ def graph_total(state_slctd, county_slctd):
 
         x.append(d1)
         y.append(total[d1][0])
-        z.append(total[d1][0] - ((total[d1][0] - total[d2][0] - deaths[d1][0])/total['Population'][0]*100000) - deaths[d1][0])
+        z.append(total[d1][0] - ((total[d1][0] - total[d2][0])/total['Population'][0]*100000) - deaths[d1][0])
         z2.append(deaths[d1][0])
         i -= 1
 
