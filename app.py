@@ -29,13 +29,12 @@ deaths_pd.columns = deaths_pd.columns.astype(str)
 columns = confirmed_pd.columns
 
 population_pd = population_pd.drop(['County Name','State'], axis=1).reset_index(drop=True)
-population_pd = population_pd.rename(columns={"countyFIPS":"FIPS", "population":"Population"})
 
-confirmed_pd = pd.merge(confirmed_pd, population_pd, on=['FIPS']).dropna().reset_index(drop=True)
-deaths_pd = pd.merge(deaths_pd, population_pd, on=['FIPS']).dropna().reset_index(drop=True)
+confirmed_pd = pd.merge(confirmed_pd, population_pd, on=['countyFIPS']).dropna().reset_index(drop=True)
+deaths_pd = pd.merge(deaths_pd, population_pd, on=['countyFIPS']).dropna().reset_index(drop=True)
 
-confirmed_pd = confirmed_pd[confirmed_pd['Population']!=0].reset_index(drop=True)
-deaths_pd = deaths_pd[deaths_pd['Population']!=0].reset_index(drop=True)
+confirmed_pd = confirmed_pd[confirmed_pd['population']!=0].reset_index(drop=True)
+deaths_pd = deaths_pd[deaths_pd['population']!=0].reset_index(drop=True)
 
 y_vals=[]
 ranges=[]
@@ -58,7 +57,7 @@ risk = []
 graphIR = []
 
 for x in range(0,len(confirmed_pd)):
-    graphIR.append((confirmed_pd[TE][x]-confirmed_pd[TS][x])/confirmed_pd['Population'][x]*100000)
+    graphIR.append((confirmed_pd[TE][x]-confirmed_pd[TS][x])/confirmed_pd['population'][x]*100000)
     
 mean = mean(graphIR)
 std = stdev(graphIR)
