@@ -189,7 +189,7 @@ def graph_IR(state_slctd, county_slctd):
     dff = dff[dff["State"] == state_slctd]
     dff = dff[dff["County Name"] == county_slctd].reset_index(drop=True)
 
-    localPop = local1['Population'][0] + local2['Population'][0] + local3['Population'][0]
+    localPop = local1['population'][0] + local2['population'][0] + local3['population'][0]
 
     x=[]
     y=[]
@@ -204,7 +204,7 @@ def graph_IR(state_slctd, county_slctd):
         localsum = local1[d1][0] + local2[d1][0] + local3[d1][0]
         local14sum = local1[d2][0] + local2[d2][0] + local3[d2][0]
         y.append((localsum - local14sum)/localPop*100000)
-        z.append((dff[d1][0] - dff[d2][0])/dff['Population'][0]*100000)
+        z.append((dff[d1][0] - dff[d2][0])/dff['population'][0]*100000)
         i -= 1
 
     LineData = pd.DataFrame(list(zip(x,z,y)), columns = ['Dates', county_slctd, 'Local']) 
@@ -258,8 +258,8 @@ def graph_new(state_slctd, county_slctd):
     point = point[point["County Name"] == county_slctd]
     point = point.reset_index(drop=True)
 
-    thisIR = (point[TE][0] - point[TS][0])/point['Population'][0]*100000
-    lastIR = (point[LE][0] - point[LS][0])/point['Population'][0]*100000
+    thisIR = (point[TE][0] - point[TS][0])/point['population'][0]*100000
+    lastIR = (point[LE][0] - point[LS][0])/point['population'][0]*100000
 
     if thisIR > lastIR:
         highIR = thisIR
@@ -298,7 +298,7 @@ def graph_total(state_slctd, county_slctd):
 
         x.append(d1)
         y.append(total[d1][0])
-        z.append(total[d1][0] - ((total[d1][0] - total[d2][0])/total['Population'][0]*100000) - deaths[d1][0])
+        z.append(total[d1][0] - ((total[d1][0] - total[d2][0])/total['population'][0]*100000) - deaths[d1][0])
         z2.append(deaths[d1][0])
         i -= 1
 
