@@ -28,8 +28,11 @@ deaths_pd.columns = deaths_pd.columns.astype(str)
 
 columns = confirmed_pd.columns
 
-confirmed_pd['Population'] = population_pd['population']
-deaths_pd['Population'] = population_pd['population']
+population_pd = population_pd.drop(['County Name','State'], axis=1).reset_index(drop=True)
+population_pd = population_pd.rename(columns={"countyFIPS":"FIPS", "population":"Population"})
+
+confirmed_pd = pd.merge(confirmed_pd, population_pd, on=['FIPS']).dropna().reset_index(drop=True)
+deaths_pd = pd.merge(deaths_pd, population_pd, on=['FIPS']).dropna().reset_index(drop=True)
 
 confirmed_pd = confirmed_pd[confirmed_pd['Population']!=0].reset_index(drop=True)
 deaths_pd = deaths_pd[deaths_pd['Population']!=0].reset_index(drop=True)
