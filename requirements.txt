@@ -1,4 +1,4 @@
-absl-py=0.9.0=pypi_0
+absl-py==0.9.0=pypi_0
 alabaster=0.7.12=py_0
 anaconda=custom=py38_1
 anaconda-client=1.7.2=py38_0
