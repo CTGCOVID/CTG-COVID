@@ -55,7 +55,7 @@ conda-verify==3.4.2=py_1
 console_shortcut==0.1.1=4
 contextlib2==0.6.0.post1=py_0
 cryptography==2.9.2=py38h7a1dbc1_0
-curl=7.67.0==h2a8f88b_0
+curl==7.67.0=h2a8f88b_0
 cycler==0.10.0=py38_0
 cython==0.29.21=py38ha925a31_0
 cytoolz==0.10.1=py38he774522_0
