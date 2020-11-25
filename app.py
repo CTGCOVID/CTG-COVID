@@ -81,6 +81,7 @@ for x in range(0,len(x_vals)):
 
 Curve = pd.DataFrame(list(zip(x_vals, y_vals, ranges)), columns = ['X', 'Y', 'Range']) 
 
+config = dict({'scrollZoom' : False})
    
 ########################################################################################################################################
 
@@ -129,7 +130,7 @@ fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', col
     scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk', 'IR'])
 
 fig2.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<extra></extra>')
-fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str((pd.datetime.today()).date()), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#323130', lakecolor='#323130', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
+fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str((pd.datetime.today()).date()), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
 fig2.update_geos(showsubunits=True, subunitcolor='black')
 
 states = confirmed_pd['State'].unique()
@@ -148,7 +149,7 @@ server=app.server
 ##APP LAYOUT
 app.layout = html.Div([
     html.Div([
-        dcc.Graph(figure = fig2),
+        dcc.Graph(figure = fig2, config = config),
         html.Br(), 
     ], className='container', style={'backgroundColor':'#111110'}),
     html.Div([
@@ -245,7 +246,7 @@ def graph_IR(state_slctd, county_slctd):
     
     fig4 = px.line(LineData, x='Dates', y=[county_slctd, 'Local'], title='Incidence Rate')
     fig4.update_xaxes(title_text='Date')
-    fig4.update_yaxes(showline=True, linecolor='white', title_text='Active Cases')
+    fig4.update_yaxes(showline=True, linecolor='white', title_text='Incidence Rate')
     fig4.update_layout(height=300,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
     
     return fig4
@@ -286,7 +287,7 @@ def graph_new(state_slctd, county_slctd):
     Output(component_id='riskgraph', component_property='figure'),
     [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
 )
-def graph_new(state_slctd, county_slctd):
+def graph_risk(state_slctd, county_slctd):
     point = confirmed_pd.copy()
     point = point[point["State"] == state_slctd]
     point = point[point["County Name"] == county_slctd]
@@ -302,9 +303,11 @@ def graph_new(state_slctd, county_slctd):
     
     fig6 = px.area(Curve, x='X', y='Y', title = 'Risk Level', color='Range', color_discrete_sequence=['#C0C0C0', '#00FF00', '#FFFF00', '#FF0000'])
     fig6.update_traces(marker_color='#00ff00')
-    fig6.update_xaxes(showline=True, linecolor='white', title_text='Date')
-    fig6.update_yaxes(showline=True, linecolor='white', title_text='New Cases')
-    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, )], height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', title_font_color='white')
+    fig6.update_xaxes(showline=True, linecolor='white', title_text='Normalized Risk', title_font={'color':'gray'}, tickcolor='gray')
+    fig6.update_yaxes(showline=True, linecolor='white', title_text='Risk Level', title_font={'color':'gray'}, tickcolor='gray')
+    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, text=point['Risk'][0])], 
+                       height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"white"}, plot_bgcolor='#111110', paper_bgcolor='#111110', 
+                       title_font_color='white')
 
     return fig6
 
@@ -332,7 +335,7 @@ def graph_total(state_slctd, county_slctd):
 
         x.append(d1)
         y.append(total[d1][0])
-        z.append(total[d1][0] - ((total[d1][0] - total[d2][0])/total['population'][0]*100000) - deaths[d1][0])
+        z.append(total[d1][0] - (total[d1][0] - total[d2][0]) - deaths[d1][0])
         z2.append(deaths[d1][0])
         i -= 1
 
