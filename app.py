@@ -130,7 +130,7 @@ fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', col
     scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk', 'IR'])
 
 fig2.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<extra></extra>')
-fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str((pd.datetime.today()).date()), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
+fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str(TE), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
 fig2.update_geos(showsubunits=True, subunitcolor='black')
 
 states = confirmed_pd['State'].unique()
