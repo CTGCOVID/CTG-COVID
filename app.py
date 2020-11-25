@@ -80,6 +80,7 @@ for x in range(0,len(x_vals)):
         ranges.append('High')
 
 Curve = pd.DataFrame(list(zip(x_vals, y_vals, ranges)), columns = ['X', 'Y', 'Range']) 
+
    
 ########################################################################################################################################
 
@@ -92,6 +93,44 @@ Curve = pd.DataFrame(list(zip(x_vals, y_vals, ranges)), columns = ['X', 'Y', 'Ra
 
 ########################################################################################################################################
 
+strFIPS = []
+risk = []
+combined = []
+
+confirmed_pd['IR'] = graphIR
+
+for x in range(0,len(confirmed_pd)):
+    strFIPS.append(str(confirmed_pd['countyFIPS'][x]).rjust(5,'0'))
+
+confirmed_pd['countyFIPS'] = strFIPS
+
+for x in range(0,len(confirmed_pd)):
+    county = confirmed_pd['County Name'][x] 
+    
+    combined.append(county[:-7] + ', ' + confirmed_pd['State'][x])
+    
+
+    if confirmed_pd['IR'][x]<mean + std:
+        risk.append('LOW')
+    elif confirmed_pd['IR'][x]>=mean + std and confirmed_pd['IR'][x]<=mean+2*std:
+        risk.append('MEDIUM')
+    elif confirmed_pd['IR'][x]>mean+2*std:
+        risk.append('HIGH')
+    else: 
+        risk.append('ERROR')
+
+confirmed_pd['Risk'] = risk
+confirmed_pd['Combined'] = combined
+
+colorscale = ["#CCFFCC","#00FF00","#99FF00","#CCFF00","#FFFF00","#FFCC00","#FF6600","#FF0000"]
+
+fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', color='IR',
+    color_continuous_scale=colorscale,range_color=(0, mean+std*2), 
+    scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk', 'IR'])
+
+fig2.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<extra></extra>')
+fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str((pd.datetime.today()).date()), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#323130', lakecolor='#323130', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
+fig2.update_geos(showsubunits=True, subunitcolor='black')
 
 states = confirmed_pd['State'].unique()
 states.sort()
@@ -102,24 +141,16 @@ counties.sort()
 
 
 
-States_pd = pd.DataFrame(list(zip(states)), columns = ['State'])
-States_pd['Color'] = 'Green'
-States_pd.loc[States_pd['State'] == 'FL','Color'] = 'Red'
-    
-fig2 = px.choropleth(States_pd, locations='State', color= 'Color',
-            scope = "usa",hover_name = "State", locationmode='USA-states', color_discrete_sequence = ['#4CBB17','red'], title='DOD State Rankings')
-
-fig2.update_layout(height=700, legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#323130', lakecolor='#323130', 
-                subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110')
-
-
-
 
 app = dash.Dash(__name__)
 server=app.server
 
 ##APP LAYOUT
 app.layout = html.Div([
+    html.Div([
+        dcc.Graph(figure = fig2),
+        html.Br(), 
+    ], className='container', style={'backgroundColor':'#111110'}),
     html.Div([
         html.Div([
             html.Div(children='State: '),
@@ -142,6 +173,9 @@ app.layout = html.Div([
         id='graph-update',
         interval = 100),
     ], className='container', style={'backgroundColor':'#111110'})
+
+
+
 
 
 @app.callback(
