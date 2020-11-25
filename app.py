@@ -305,8 +305,8 @@ def graph_risk(state_slctd, county_slctd):
     fig6.update_traces(marker_color='#00ff00')
     fig6.update_xaxes(showline=True, linecolor='white', title_text='Normalized Risk', title_font={'color':'gray'}, tickcolor='gray')
     fig6.update_yaxes(showline=True, linecolor='white', title_text='Risk Level', title_font={'color':'gray'}, tickcolor='gray')
-    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, text=point['Risk'][0])], 
-                       height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"white"}, plot_bgcolor='#111110', paper_bgcolor='#111110', 
+    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, text=point['Risk'][0], font=dict(color='white'))], 
+                       height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', 
                        title_font_color='white')
 
     return fig6
