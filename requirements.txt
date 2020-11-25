@@ -107,7 +107,6 @@ idna==2.7=pypi_0
 imageio==2.9.0=py_0
 imagesize==1.2.0=py_0
 importlib-metadata==1.7.0=py38_0
-importlib_metadata==1.7.0=0
 inflection==0.5.1=pypi_0
 intel-openmp==2020.1=216
 intervaltree==3.0.2=py_1
