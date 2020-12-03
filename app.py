@@ -15,11 +15,15 @@ from dash.dependencies import Input, Output
 from statistics import mean
 from statistics import stdev
 import math
+from numpy import radians, cos, sin
+import plotly.graph_objects as go
 
 url = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv'
 popUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_county_population_usafacts.csv'
 deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv'
+EglinUrl = 'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
 
+EglinInd = pd.read_csv(EglinUrl, sep=',', encoding='gbk')
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
@@ -36,50 +40,9 @@ deaths_pd = pd.merge(deaths_pd, population_pd, on=['countyFIPS']).dropna().reset
 confirmed_pd = confirmed_pd[confirmed_pd['population']!=0].reset_index(drop=True)
 deaths_pd = deaths_pd[deaths_pd['population']!=0].reset_index(drop=True)
 
-y_vals=[]
-ranges=[]
 
-sunday = datetime.strptime(columns[-1],'%m/%d/%y').date()
-day = sunday.weekday()
-gap = 1
-
-while(day != 6):
-    gap += 1
-    sunday = sunday - timedelta(days=1)
-    day = sunday.weekday()
-
-TE = columns[-gap]
-TS = columns[-(gap+7)]
-LE = TS
-LS = columns[-(gap+14)]
-
-risk = []
-graphIR = []
-
-for x in range(0,len(confirmed_pd)):
-    graphIR.append((confirmed_pd[TE][x]-confirmed_pd[TS][x])/confirmed_pd['population'][x]*100000)
-    
-mean = mean(graphIR)
-std = stdev(graphIR)
-x_vals=[mean-std*3]
-
-for x in range(1,61):
-    x_vals.append(x_vals[x-1]+std/10)
-
-for x in range(0,len(x_vals)):
-    y_vals.append((1/(std*math.sqrt(2*math.pi)))*math.exp(-1/2*((x_vals[x]-mean)/(std))**2))
-
-for x in range(0,len(x_vals)):
-    if x_vals[x]<0:
-        ranges.append('Out')
-    elif x<40:
-        ranges.append('Low')
-    elif x>=40 and x<51:
-        ranges.append('Medium')
-    else:
-        ranges.append('High')
-
-Curve = pd.DataFrame(list(zip(x_vals, y_vals, ranges)), columns = ['X', 'Y', 'Range']) 
+EglinInd = EglinInd[['County']]
+EglinInd['Risk'] = 'Red'
 
 config = dict({'scrollZoom' : False})
    
@@ -97,8 +60,18 @@ config = dict({'scrollZoom' : False})
 strFIPS = []
 risk = []
 combined = []
+combined2 = []
 
-confirmed_pd['IR'] = graphIR
+sunday = datetime.strptime(columns[-1],'%m/%d/%y').date()
+day = sunday.weekday()
+gap = 1
+
+while(day != 6):
+    gap += 1
+    sunday = sunday - timedelta(days=1)
+    day = sunday.weekday()
+
+TE = columns[-gap]
 
 for x in range(0,len(confirmed_pd)):
     strFIPS.append(str(confirmed_pd['countyFIPS'][x]).rjust(5,'0'))
@@ -109,28 +82,21 @@ for x in range(0,len(confirmed_pd)):
     county = confirmed_pd['County Name'][x] 
     
     combined.append(county[:-7] + ', ' + confirmed_pd['State'][x])
-    
+    combined2.append(county+', '+ confirmed_pd['State'][x])
 
-    if confirmed_pd['IR'][x]<mean + std:
-        risk.append('LOW')
-    elif confirmed_pd['IR'][x]>=mean + std and confirmed_pd['IR'][x]<=mean+2*std:
-        risk.append('MEDIUM')
-    elif confirmed_pd['IR'][x]>mean+2*std:
-        risk.append('HIGH')
-    else: 
-        risk.append('ERROR')
 
-confirmed_pd['Risk'] = risk
 confirmed_pd['Combined'] = combined
+confirmed_pd['County'] = combined2
 
-colorscale = ["#CCFFCC","#00FF00","#99FF00","#CCFF00","#FFFF00","#FFCC00","#FF6600","#FF0000"]
+confirmed_pd = pd.merge(confirmed_pd, EglinInd, how='left', on=['County']).reset_index(drop=True)
+confirmed_pd['Risk'] = confirmed_pd['Risk'].fillna('Green')
 
-fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', color='IR',
-    color_continuous_scale=colorscale,range_color=(0, mean+std*2), 
-    scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk', 'IR'])
 
-fig2.update_traces(marker_line_width=.3, marker_opacity=.8,hovertemplate='<b>%{hovertext}</b><br>Risk: %{customdata[0]}<br><br>Incidence Rate: %{z}<extra></extra>')
-fig2.update_layout(height=700, annotations = [dict(text = 'Last Updated: ' + str(TE), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
+fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', color='Risk', color_discrete_sequence = ['#FF0000', '#03C04A'],
+    scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk'])
+
+fig2.update_traces(marker_line_width=.3, marker_opacity=.8)
+fig2.update_layout(showlegend=False, height=700, annotations = [dict(text = 'Last Updated: ' + str(TE), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
 fig2.update_geos(showsubunits=True, subunitcolor='black')
 
 states = confirmed_pd['State'].unique()
@@ -288,26 +254,73 @@ def graph_new(state_slctd, county_slctd):
     [Input(component_id='state_dropdown', component_property='value'), Input(component_id='county_dropdown', component_property='value')]
 )
 def graph_risk(state_slctd, county_slctd):
-    point = confirmed_pd.copy()
-    point = point[point["State"] == state_slctd]
-    point = point[point["County Name"] == county_slctd]
-    point = point.reset_index(drop=True)
-
-    thisIR = (point[TE][0] - point[TS][0])/point['population'][0]*100000
-    lastIR = (point[LE][0] - point[LS][0])/point['population'][0]*100000
-
-    if thisIR > lastIR:
-        highIR = thisIR
-    else:
-        highIR = lastIR
+    dff = confirmed_pd.copy()
+    dff = dff[dff["State"] == state_slctd]
+    dff = dff[dff["County Name"] == county_slctd]
+    dff = dff.reset_index(drop=True)
     
-    fig6 = px.area(Curve, x='X', y='Y', title = 'Risk Level', color='Range', color_discrete_sequence=['#C0C0C0', '#00FF00', '#FFFF00', '#FF0000'])
-    fig6.update_traces(marker_color='#00ff00')
-    fig6.update_xaxes(showline=True, linecolor='white', title_text='Normalized Risk', title_font={'color':'gray'}, tickcolor='gray')
-    fig6.update_yaxes(showline=True, linecolor='white', title_text='Risk Level', title_font={'color':'gray'}, tickcolor='gray')
-    fig6.update_layout(annotations=[dict(x=highIR, y=0, showarrow=True, arrowhead=2, arrowwidth=3, arrowcolor='white', ax = 0, ay = -80, text=point['Risk'][0], font=dict(color='white'))], 
-                       height=410,yaxis_showgrid=False, xaxis_showgrid=False, xaxis_tickangle = -45, title_x = 0.4, font={"size":15, "color":"gray"}, plot_bgcolor='#111110', paper_bgcolor='#111110', 
-                       title_font_color='white')
+    r = .9
+    if dff['Risk'][0] == 'Green':
+        theta = 130
+        Risk = 'Low'
+        color = '#03C04A'
+    elif dff['Risk'][0] == 'Red':
+        theta = 50
+        Risk = 'High'
+        color = '#FF0000'
+    else: 
+        theta = 90
+        Risk = 'Unknown'
+        color = 'white'
+    
+    x_head = r * cos(radians(theta))
+    y_head = r * sin(radians(theta))
+    
+    
+    fig6 = go.Figure(go.Indicator(
+    mode = "gauge+number",
+    number = {'prefix': "       ", 'font': {'size': 1, 'color':'#111110'}},
+    value = 0,
+    domain = {'x': [0,1], 'y': [0,1]},
+    gauge = {
+        'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "#111110"},
+        'bar': {'color': "#111110"},
+        'bgcolor': "#111110",
+        'borderwidth': 2,
+        'bordercolor': "#111110",
+        'steps': [
+            {'range': [0, 50], 'color': '#03C04A', 'name':'Low'},
+            {'range': [50,100], 'color': '#FF0000', 'name':'High'}],
+        }))
+
+    ## by setting the range of the layout, we are effectively adding a grid in the background
+    ## and the radius of the gauge diagram is roughly 0.9 when the grid has a range of [-1,1]x[0,1]
+
+
+    fig6.add_annotation(
+        ax=0,
+        ay=0,
+        axref='x',
+        ayref='y',
+        x=x_head,
+        y=y_head,
+        xref='x',
+        yref='y',
+        showarrow=True,
+        arrowhead=2,
+        arrowsize=1,
+        arrowwidth=20, 
+        arrowcolor='#CCCCCC', 
+        text=Risk, 
+        font={'color': color, 'family': "Arial", 'size':100}
+        )
+
+    fig6.update_layout(
+        font={'color': "#111110", 'family': "Arial"},
+        xaxis={'zeroline':False,'showgrid': False, 'showticklabels':False, 'range':[-1,1]},
+        yaxis={'zeroline':False,'showgrid': False, 'showticklabels':False, 'range':[0,1]},
+        plot_bgcolor='#111110', paper_bgcolor='#111110'
+        )
 
     return fig6
 
