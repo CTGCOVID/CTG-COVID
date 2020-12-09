@@ -23,7 +23,10 @@ popUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covi
 deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv'
 EglinUrl = 'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
 
-EglinInd = pd.read_csv(EglinUrl, sep=',', encoding='gbk')
+
+EglinInd = pd.read_csv(EglinUrl, encoding='ansi')
+
+
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
@@ -88,10 +91,18 @@ for x in range(0,len(confirmed_pd)):
 confirmed_pd['Combined'] = combined
 confirmed_pd['County'] = combined2
 
+confirmed_pd = confirmed_pd.drop([1989])
+
 confirmed_pd = pd.merge(confirmed_pd, EglinInd, how='left', on=['County']).reset_index(drop=True)
 confirmed_pd['Risk'] = confirmed_pd['Risk'].fillna('Green')
 
-
+i=74
+while i>0:
+    d1 = columns[-i]
+    confirmed_pd[d1] = pd.to_numeric(confirmed_pd[d1])
+    i -= 1
+        
+    
 fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', color='Risk', color_discrete_sequence = ['#FF0000', '#03C04A'],
     scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk'])
 
