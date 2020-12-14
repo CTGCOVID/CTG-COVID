@@ -23,8 +23,8 @@ popUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covi
 deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv'
 EglinUrl = r'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
 
-
 EglinInd = pd.read_csv(EglinUrl, sep=',', encoding='gbk',index_col=False)
+date = EglinInd['Unnamed: 12'][0][-11:]
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
@@ -105,7 +105,7 @@ fig2 = px.choropleth(confirmed_pd, geojson=counties, locations='countyFIPS', col
     scope="usa", title='Active Incidence Rate per County', hover_name = "Combined" , hover_data=['Risk'])
 
 fig2.update_traces(marker_line_width=.3, marker_opacity=.8)
-fig2.update_layout(showlegend=False, height=700, annotations = [dict(text = 'Last Updated: ' + str(TE), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
+fig2.update_layout(showlegend=False, height=700, annotations = [dict(text = 'Last Updated: ' + str(date), x=.8, y=.91)],legend = dict(x=0.8),title_x = 0.4, font={"size":20, "color":"white"},geo=dict(bgcolor='#111110', lakecolor='#111110', subunitcolor='black'), plot_bgcolor='#111110', paper_bgcolor='#111110',margin={"r":0,"t":100,"l":0,"b":50})
 fig2.update_geos(showsubunits=True, subunitcolor='black')
 
 states = confirmed_pd['State'].unique()
