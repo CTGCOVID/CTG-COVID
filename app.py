@@ -21,10 +21,10 @@ import plotly.graph_objects as go
 url = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv'
 popUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_county_population_usafacts.csv'
 deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv'
-EglinUrl = 'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
+EglinUrl = r'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
 
 
-EglinInd = pd.read_csv(EglinUrl, index_col=False)
+EglinInd = pd.read_csv(EglinUrl, sep=',', encoding='gbk',index_col=False)
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
