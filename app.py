@@ -24,7 +24,7 @@ deathUrl = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/co
 EglinUrl = r'https://raw.githubusercontent.com/CTGCOVID/CTG-COVID/master/Eglin%20Early%20Indicators.csv'
 
 EglinInd = pd.read_csv(EglinUrl, sep=',', encoding='gbk',index_col=False)
-date = EglinInd['Unnamed: 12'][0][-11:]
+date = EglinInd['Unnamed: 12'][0][9:-13]
 confirmed_pd = pd.read_csv(url, index_col=False)
 population_pd = pd.read_csv(popUrl, index_col=False)
 deaths_pd = pd.read_csv(deathUrl, index_col=False)
